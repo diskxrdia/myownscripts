@@ -30,7 +30,8 @@ repoBackup(){ #crea backup del repositorio actual
 if [ $borrado == 0 ] ; then
 	gitUpload
 fi
+
 if [ $borrado == 1 ] ; then
 	repoBackup
 	gitDelete
-
+fi
