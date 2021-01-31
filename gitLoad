@@ -1,17 +1,23 @@
 #!/bin/bash
 borrado=$1
 
-#subir archivos ---> por defecto
-sudo git init
-sudo git add .
-sudo git commit -m 'scripts'
-sudo git remote add origin https://github.com/diskxrdia/myownscripts
-sudo git push -u origin master
+gitDelete(){ #borrar archivos
+	read archivo
+	sudo git rm $archivo
+	sudo git commit -m 'file deleted'
+	sudo git push
+}
 
-if [ $borrado == 1 ] ; then
-#elimina archivos
+gitUpload(){ #subir archivos
+	sudo git init
+	sudo git add .
+	sudo git commit -m 'scripts'
+	sudo git remote add origin https://github.com/diskxrdia/myownscripts
+	sudo git push -u origin master
+}
+
+repoBackup(){ #crea backup del repositorio actual
 	usuario=$(whoami)
-
 	if [ -d /home/$usuario/repo.back ]
 	then
 		cp * /home/$usuario/repo.back
@@ -19,10 +25,12 @@ if [ $borrado == 1 ] ; then
 		mkdir /home/$usuario/repo.back
 		cp * /home/$usuario/repo.back
 	fi
+}
 
+if [ $borrado == 0 ] ; then
+	gitUpload
 fi
-read archivo
+if [ $borrado == 1 ] ; then
+	repoBackup
+	gitDelete
 
-sudo git rm $archivo
-sudo git commit -m 'file deleted'
-sudo git push
