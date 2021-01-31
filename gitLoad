@@ -2,7 +2,8 @@
 borrado=$1
 
 gitDelete(){ #borrar archivos
-	read archivo
+	ls
+	read -p "Archivos para borrar:" archivo
 	sudo git rm $archivo
 	sudo git commit -m 'file deleted'
 	sudo git push
