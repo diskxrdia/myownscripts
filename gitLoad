@@ -4,9 +4,10 @@ fecha=$(date)
 borrado=$1
 
 gitDelete(){ #borrar archivos
+	ls
 	read -p "Archivo a eleminar:" archivo
 	sudo git rm $archivo
-	sudo git commit -m 'file deleted'
+	sudo git commit -m "Files deleted by $usuario on $fecha"
 	sudo git push
 }
 
