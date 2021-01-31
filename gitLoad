@@ -1,4 +1,5 @@
 #!/bin/bash
+define 
 borrado=$1
 
 gitDelete(){ #borrar archivos
@@ -10,9 +11,10 @@ gitDelete(){ #borrar archivos
 }
 
 gitUpload(){ #subir archivos
+	
 	sudo git init
 	sudo git add .
-	sudo git commit -m "Files uploaded by $whoami on $date"
+	sudo git commit -m 'Files uploaded by $whoami on $date'
 	sudo git remote add origin https://github.com/diskxrdia/myownscripts
 	sudo git push -u origin master
 }
