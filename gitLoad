@@ -7,7 +7,7 @@ sudo git add .
 sudo git commit -m 'scripts'
 sudo git remote add origin https://github.com/diskxrdia/myownscripts
 sudo git push -u origin master
-
+break
 if [ $borrado == 1 ] ; then
 #elimina archivos
 	usuario=$(whoami)
