@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo -e "Lista de interfaces"
+echo -e "-------------------"
+ip link show | awk '{print$2}'
+echo -e "-------------------"
+
+
+read -p "Interfaz:" interfaz
+modo=$1
+
+
+monitorMode() {
+
+	if [ "$modo" != 'managed' ]
+	then
+		#sudo service network-manager stop ---> en caso de usar tu unica tarjeta de red.
+		#sudo service wpa_supplicant restart ---> en caso de usar tu unica tarjeta de red.
+
+		sudo dhclient -r $interfaz && sudo ifconfig $interfaz down && sudo iwconfig $interfaz mode monitor && sudo ifconfig $interfaz up
+
+		echo -e "Canal para capturar"
+		read canal
+        sudo iwconfig $interfaz channel $canal
+
+		iwlist $interfaz channel | grep "Current Frequency"
+
+		echo -e "Wireshark init"
+		read wire
+		if [ $wire == 1 ]
+		then
+			sudo wireshark -i $interfaz -y IEEE802_11_RADIO &
+		fi
+
+	else
+		sudo ifconfig $interfaz down && sudo iwconfig $interfaz mode managed && sudo ifconfig $interfaz up
+		
+		#sudo service network-manager restart ---> en caso de usar tu unica tarjeta de red.
+		#sudo dhclient $interfaz ---> en caso de usar tu unica tarjeta de red.
+	fi
+}
+
+monitorMode
