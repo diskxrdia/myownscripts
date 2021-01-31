@@ -1,0 +1,44 @@
+#!/bin/bash
+loop=1
+compexConfig(){
+	$avadiable500 = $(sudo nmap -v -sn -n 192.168.0.0/24 -oG - | awk '/Status: Down/{print $2}' | awk 'NR == 2')
+    sudo ip link a link wlo1 vlan500 type vlan id 500
+    sudo ip a a $avadiable500/24 dev vlan500
+    sudo ifconfig vlan500 up
+    ping 192.168.0.2 -c 4 #lab server
+}
+
+raspConfig(){
+	echo -e "Function not complete..."
+}
+
+while [ $loop == 1 ]; do
+
+	echo -e "------In office configurations------"
+	echo -e "1.Compex lab"
+	echo -e "2.Raspberry clients"
+	echo -e "3.FULL configurations"
+	echo -e "4.Exit" 
+	echo -e "------------------------------------"
+	read opcion
+
+	if [ $opcion == 1 ]; then #VLAN500
+		compexConfig
+		loop=2
+	fi
+
+	if [ $opcion == 2 ]; then #RASPBERRY - a terminar
+		raspConfig
+		loop=2
+    fi
+
+    if [ $opcion == 3 ]; then
+		compexConfig
+		raspConfig
+		loop=2
+    fi
+
+    if [ $opcion == 4 ]; then
+    	loop=2
+    fi
+done
