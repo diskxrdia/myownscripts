@@ -1,5 +1,6 @@
 #!/bin/bash
-define 
+usuario=$(whoami)
+fecha=$(date)
 borrado=$1
 
 gitDelete(){ #borrar archivos
@@ -14,13 +15,13 @@ gitUpload(){ #subir archivos
 	
 	sudo git init
 	sudo git add .
-	sudo git commit -m 'Files uploaded by $whoami on $date'
+	sudo git commit -m 'Files uploaded by $usuario on $fecha'
 	sudo git remote add origin https://github.com/diskxrdia/myownscripts
 	sudo git push -u origin master
 }
 
 repoBackup(){ #crea backup del repositorio actual
-	usuario=$(whoami)
+	#usuario=$(whoami)
 	if [ -d /home/$usuario/repo.back ]
 	then
 		cp * /home/$usuario/repo.back
