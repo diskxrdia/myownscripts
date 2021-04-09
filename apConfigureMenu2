@@ -1,0 +1,187 @@
+#!/bin/sh
+
+RED='\033[0;31m'
+GRN='\e[32m'
+NC='\033[0m'
+
+echo "--------------FUNCTIONALITIES--------------"
+echo "radiusConf	meshConf	coovaConf"
+echo "-------------------------------------------"
+echo "."
+echo "--------------------CHT--------------------"
+echo "enable or disable all modules?"
+echo "-------------------------------------------"
+
+read -p "Select a functionalitie:" optionConf
+read -p "Select a CHt option:" chtmode
+read -p "Select radio:" radio
+
+dynVlan () {
+	read -p "Insert VLAN ID:" vlanid
+	uci set network.@switch_vlan[2].vlan=3
+	uci set network.@switch_vlan[2].ports='0t 2t 3t'
+	uci set network.@switch_vlan[2].vid=$vlanid
+}
+
+chtMod () {
+
+	cht_cli aca_$chtmode
+	cht_cli pre_$chtmode
+	cht_cli sr_$chtmode
+	cht_cli lb_$chtmode
+	cht_cli wips_$chtmode
+	cht_cli power_$chtmode
+	cht_cli loc_"$chtmode"_mod
+	cht_cli save_conf
+
+}
+
+hostspotConf () {
+	radiusConf
+	echo "---List of nas macs---"
+	echo "c8:2c:2b:10:00:1f"
+	echo "----------------------"
+	read -p "NASMAC:" nasmac
+
+	if [ -z "$nasmac" ];
+	then
+	echo "Working with AP MAC by default"
+	else
+		uci set chilli.@chilli[0].nasmac=$nasmac
+	fi
+
+	uci set wireless.wifinet0.access_network_type='0'
+	uci set wireless.wifinet0.hs20='1'
+	uci set wireless.wifinet0.ipaddr_type_availability='00'
+	uci set wireless.wifinet0.interworking='1'
+	uci set wireless.wifinet0.uesa='1'
+	uci set wireless.wifinet0.hessid='44:D1:FA:1D:F7:2E'
+	uci set wireless.wifinet0.esr='1'
+	uci set wireless.wifinet0.internet='1'
+	uci set wireless.wifinet0.network_auth_type='00'
+	uci set wireless.wifinet0.asra='1'
+	uci set wireless.wifinet0.domain_name='wi-fi.org'
+	uci set wireless.wifinet0.roaming_consortium='506F9A' '001BC504BF'
+	uci set wireless.wifinet0.venue_group='2'
+	uci set wireless.wifinet0.venue_url='1|https://venue-server.r2m-test bed.wi-fi.org/floorplans/index.html'
+	uci set wireless.wifinet0.venue_type='8'
+	uci set wireless.wifinet0.venue_name='1|eng:Wi-Fi Alliance;'
+	uci set wireless.wifinet0.anqp_3gpp_cell_net='310,026'
+	uci set wireless.wifinet0.nai_realm='0,mail.example.com,21[5:7]' '0,cisco.com,21[5:7]' '0,wi-fi.org,21[5:7],13[5:6]' '0,example.com,13[5:6]'
+	uci set wireless.wifinet0.advice_of_charge='1|0|0|1|0'
+	uci set wireless.wifinet0.aoc_plan_info='1|eng|CAD|<?xml version="1.0" encoding="UTF-8"?><Plan xmlns="http://www.wi-fi.org/specifications/hotspot2dot0/v1.0/aocpi"><Description>Wi-Fi access for 1 hour, while you wait at the gate, $0.99</Description></Plan>;' '1|fre|CHF|<?xml version="1.0" encoding="UTF-8"?><Plan xmlns="http://www.wi-fi.org/specifications/hotspot2dot0/v1.0/aocpi"><Description>Accès Wi-Fi pendant 1 heure, pendant que vous attendez à la porte, 0,99 $</Description></Plan>;'
+	uci set wireless.wifinet0.disable_dgaf='1'
+	uci set wireless.wifinet0.hs20_oper_friendly_name='eng:Wi-Fi Alliance;' 'chi:Wi-Fi Alliance;'
+	uci set wireless.wifinet0.hs20_conn_capab='6:FTP:1' '6:HTTP:1' '6:TLS:1' '17:IPSEC:1' '::' '17:ESP:1'
+	uci set wireless.wifinet0.anqp_domain_id='1234'
+	uci set wireless.wifinet0.hs20_t_c_timestamp='13578042'
+	uci set wireless.wifinet0.hs20_t_c_filename='tandc-id1-content.txt'
+	uci set wireless.wifinet0.osu_ssid='"osu_ssid"'
+	uci set wireless.wifinet0.osu_nai='1|anonymous@hotspot.net'
+	uci set wireless.wifinet0.osu_friendly_name='1|eng:SP Orange Test Only;'
+	uci set wireless.wifinet0.osu_service_desc='1|eng:Free service for test purpose;'
+	uci set wireless.wifinet0.osu_server_uri='1|https://osu-server.r2-test bed.wi-fi.org/'
+	uci set wireless.wifinet0.operator_icon='MGR.png'
+	uci set wireless.wifinet0.hs20_icon='1920:1080:eng:image/png:MGR.png:/www/luci-static/resources/cbi/hs20_icons/MGR.png'
+	uci set wireless.wifinet0.hs20_deauth_req_timeout='60'
+	uci set wireless.wifinet0.osu_icon='1|MGR.png'
+	uci set wireless.wifinet0.osu_method_list='1|1 0;'
+	uci commit && wifi
+
+}
+
+radiusConf () {
+	read -p "Radius Server IP:" radiusserver
+	uci add wireless wifi-iface
+
+	uci set wireless.$radio.disabled='0'
+	uci set wireless.@wifi-iface[0].device=$radio
+	uci set wireless.@wifi-iface[0].network='wan'
+	uci set wireless.@wifi-iface[0].mode='ap'
+        uci set wireless.@wifi-iface[0].ssid="Galgus_Radius!"
+	uci set wireless.@wifi-iface[0].id='3'
+        uci set wireless.@wifi-iface[0].encryption='wpa2'
+	uci set wireless.@wifi-iface[0].auth_server=$radiusserver
+	uci set wireless.@wifi-iface[0].auth_port='1812'
+	uci set wireless.@wifi-iface[0].auth_secret='key'
+	uci set wireless.@wifi-iface[0].acct_server=$radiusserver
+	uci set wireless.@wifi-iface[0].acct_port=1813
+	uci set wireless.@wifi-iface[0].acct_secret='key'
+	uci set wireless.@wifi-iface[0].ieee80211w=1
+	uci set wireless.@wifi-iface[0].dynamic_vlan=1
+	uci set	wireless.@wifi-iface[0].vlan_tagged_interface='eth0'
+	uci commit && wifi
+	fi
+}
+
+meshConf () {
+	uci add wireless wifi-iface
+	uci set wireless.$radio.disabled='0'
+        uci set wireless.@wifi-iface[0].device=$radio
+	uci set wireless.@wifi-iface[0].mode='mesh'
+	uci set wireless.@wifi-iface[0].encryption='sae'
+	uci set wireless.@wifi-iface[0].id='3'
+	uci set wireless.@wifi-iface[0].mesh_id='Galgus_MESH!'
+	uci set wireless.@wifi-iface[0].mesh_fwding='1'
+	uci set wireless.@wifi-iface[0].mesh_rssi_threshold='0'
+	uci set wireless.@wifi-iface[0].key='12345678'
+	uci set wireless.@wifi-iface[0].network='wan'
+	uci commit && wifi
+}
+
+coovaConf () {
+
+	uci set network.wlan=interface
+	uci set network.wlan.type='bridge'
+	uci set network.wlan.proto='none'
+
+	uci set firewall.@defaults[0]=defaults
+	uci set firewall.@defaults[0].syn_flood='1'
+	uci set firewall.@defaults[0].input='ACCEPT'
+	uci set firewall.@defaults[0].output='ACCEPT'
+	uci set firewall.@defaults[0].forward='REJECT'
+	uci set firewall.@zone[0]=zone
+	uci set firewall.@zone[0].name='lan'
+	uci set firewall.@zone[0].network='lan wan wlan'
+	uci set firewall.@zone[0].input='ACCEPT'
+	uci set firewall.@zone[0].output='ACCEPT'
+	uci set firewall.@zone[0].forward='ACCEPT'
+	uci set firewall.@zone[0].masq='1'
+	uci set firewall.@include[0]=include
+	uci set firewall.@include[0].path='/etc/firewall.user'
+
+	uci add wireless wifi-iface
+	uci set wireless.wifinet0=wifi-iface
+	uci set wireless.$radio.disabled='0'
+	uci set wireless.wifinet0.device=$radio
+	uci set wireless.wifinet0.network='wlan'
+	uci set wireless.wifinet0.mode='ap'
+	uci set wireless.wifinet0.ssid='Galgus_CP!'
+	uci set wireless.wifinet0.id='1'
+
+	uci set chilli.@chilli[0]=chilli
+	uci set chilli.@chilli[0].tundev='tun0'
+	uci set chilli.@chilli[0].ipup='/etc/chilli/up.sh'
+	uci set chilli.@chilli[0].ipdown='/etc/chilli/down.sh'
+	uci set chilli.@chilli[0].debug='1'
+	uci set chilli.@chilli[0].dns1='8.8.8.8'
+	uci set chilli.@chilli[0].dhcpif='br-wlan'
+	uci set chilli.@chilli[0].uamlisten='192.168.2.1'
+	uci set chilli.@chilli[0].uamport='3990'
+	uci set chilli.@chilli[0].uamallowed='192.168.65.66,192.168.2.1, 192.168.100.111'
+	uci set chilli.@chilli[0].radiusserver1='35.175.211.140'
+	uci delete chilli.@chilli[0].radiusserver2
+	uci set chilli.@chilli[0].radiussecret='zoox@zoox**'
+	uci set chilli.@chilli[0].uamserver='https://portal.zooxwifi.com/acesso'
+	uci set chilli.@chilli[0].uamdomain='portal.zooxwifi.com,zooxwifi.com,cdn.zooxwifi.com,zooxwifi.s3-sa-east-1.amazonaws.com,zooxwifi.s3.sa-east-1.amazonaws.com,bam.nr-data.net,js-agent.newrelic.com,google-analytics.com,facebook.com,fbcdn.net,connect.facebook.net,atdmt.com,fbsbx.com,akamaihd.net,akamaiedge.net,twitter.com,twimg.com,api.twitter.com,abs.twitter.com,fastly.net,licdn.com,linkedin.com,static.licdn.com,cloudfront.com,cloudfront.net,instagram.com'
+	uci set chilli.@chilli[0].radiusauthport='1812'
+	uci set chilli.@chilli[0].radiusacctport='1813'
+	uci set chilli.@chilli[0].macauth='1'
+	uci set chilli.@chilli[0].net='192.168.2.0/24'
+	uci set chilli.@chilli[0].lease='600'
+	uci set chilli.@chilli[0].local_splash='0'
+	uci commit && wifi
+}
+
+$optionConf
+chtMod $chtmode
